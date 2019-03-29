@@ -8,7 +8,6 @@ if root_dir:
 
 
 # TODO
-# Change every instance of `your_library_name` to the name of your library.
 # Change `author`
 # Change `author_email`
 # Change `url`
@@ -16,7 +15,7 @@ if root_dir:
 
 
 # Probably should be changed, __init__.py is no longer required for Python 3
-for dirpath, dirnames, filenames in os.walk('your_library_name'):
+for dirpath, dirnames, filenames in os.walk('bonsai_seeder'):
     # Ignore dirnames that start with '.'
     if '__init__.py' in filenames:
         pkg = dirpath.replace(os.path.sep, '.')
@@ -34,17 +33,17 @@ def package_files(directory):
 
 
 setup(
-    name='your_library_name',
+    name='bonsai_seeder',
     version="0.1",
     packages=packages,
     author="your_name_here",
     author_email="your_email_here",
     license=open('LICENSE').read(),
     # Only if you have non-python data (CSV, etc.). Might need to change the directory name as well.
-    # package_data={'your_name_here': package_files(os.path.join('your_library_name', 'data'))},
+    # package_data={'your_name_here': package_files(os.path.join('bonsai_seeder', 'data'))},
     entry_points = {
         'console_scripts': [
-            'your_library_name-cli = your_library_name.bin.rename_me_cli:main',
+            'bseeder = bonsai_seeder.bin.seeder_cli:main',
         ]
     },
     install_requires=[
