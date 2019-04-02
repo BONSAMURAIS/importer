@@ -117,9 +117,9 @@ class Loader(object):
                 self.create(dataset_uri)
             else :
                 print("Dataset exists")
-                self.delete(dataset_uri)
-                print("deleted {}".format(dataset_uri))
-                return False
+                # self.delete(dataset_uri)
+                # print("deleted {}".format(dataset_uri))
+                # return False
         except Unauthorized as err :
             print("Failed to connect to the data: access not allowed", file=sys.stderr)
             return False
@@ -128,58 +128,13 @@ class Loader(object):
             print(err, file=sys.stderr)
             return False
 
-
-
-        headers = {
-                 #'Content-Type': 'multipart/form-data',
-                 }
-        files = {
-            'file': (os.path.basename(file_path), open(file_path,'rb'), 'text/turtle'),
-            }
+        print("Uploading contents of {}".format(file_path))
+        files = { 'file': (os.path.basename(file_path), open(file_path,'rb'), 'text/turtle'), }
         response = requests.post("{}?graph={}".format(self.upload_endpoint, dataset_uri),
-                                    #data="",
                                     files=files,
-                                    headers=headers
-                                    )
-        print(response.status_code)
+                                    auth=(self.endpoint_user, self.endpoint_pwd)
+                                )
+        print("Response:")
         print(response.text)
 
-        # batch_size = 2
-        # stmt = []
-        # for s,p,o in g.triples((None, None, None)):
-        #     if type(o) == BNode or type(o) == URIRef:
-        #         stmt.append("<{}> <{}> <{}> .".format(s,p,o))
-        #     else stmt.append("<{}> <{}> "{}" .".format(s,p,o))
-        #     batch_size -=1
-        #     if batch_size == 0:
-        #         query = INSERT.format(dataset_uri, "\n".join(stmt))
-        #         print(query)
-        #         if  not self.update(query):
-        #             print("Error: inserting batch", file=sys.stderr)
-        #             return False
-        #         batch_size = 100
-        #         stmt = []
-
-        # if len(stmt):
-        #     if  not self.update(INSERT.format(dataset_uri, "\n".join(stmt))):
-        #         print("Error: inserting batch", file=sys.stderr)
-        #         return False
-
-        return False
-        # query ='''
-        # INSERT DATA
-        #     {{ <{}> <{}> <{}> . }}
-        # '''.format(s,p,o)
-
-        # print(query)
-
-
-
-
-        # sparql.setQuery(query)
-
-
-        # results = sparql.query()
-        # print(results.response.read())
-
-
+        return response.status_code in [200, 201]

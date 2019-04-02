@@ -2,3 +2,4 @@ appdirs
 docopt
 rdflib
 sparqlwrapper
+requests

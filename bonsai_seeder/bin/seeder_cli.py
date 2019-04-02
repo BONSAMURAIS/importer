@@ -35,7 +35,9 @@ def main():
 
         for ifile in args.ifiles:
             if not loader.load(ifile):
-                print("Aborting", file=sys.stderr)
+                print("Error. Aborting", file=sys.stderr)
+                sys.exit(2)
+        print("Completed")
 
 
     except KeyboardInterrupt:
