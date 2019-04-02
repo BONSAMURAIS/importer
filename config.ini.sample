@@ -1,0 +1,10 @@
+[database]
+Query = https://db.bonsai.uno/bonsai/query
+Update = https://db.bonsai.uno/bonsai/update
+Upload = https://db.bonsai.uno/bonsai/data
+
+[credentials]
+User = admin
+Password = pwd
+
+[prefix]
