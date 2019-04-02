@@ -33,7 +33,9 @@ INSERT DATA {{
 }}
 """
 
-
+ACTION_SKIP=1
+ACTION_DELETE=2
+ACTION_CONTINUE=3
 
 class Loader(object):
 
@@ -79,10 +81,10 @@ class Loader(object):
 
 
 
-    def load(self, file_name):
+    def load(self, file_name, if_exists=ACTION_SKIP):
         file_path = os.path.abspath(file_name)
         exists = os.path.isfile(file_path)
-        #print("Trying to load {}".format(file_path))
+        print("Trying to load {}".format(file_path))
 
         if not exists:
             print("Error: {} file not found".format(file_path), file=sys.stderr)
@@ -111,15 +113,24 @@ class Loader(object):
                 print("Multiple declarations of type {} . Only one expected".format(DATASET_TYPE_URI), file=sys.stderr)
                 return False
 
+        if not found:
+            print("Missing declarations of type {} . One expected".format(DATASET_TYPE_URI), file=sys.stderr)
+            return False
+
         try:
             if not self.exists(dataset_uri):
                 print("Creating graph {}".format(dataset_uri))
                 self.create(dataset_uri)
             else :
-                print("Dataset exists")
-                # self.delete(dataset_uri)
-                # print("deleted {}".format(dataset_uri))
-                # return False
+                print("Dataset {} exists".format(dataset_uri))
+                if if_exists == ACTION_SKIP:
+                    print("Skipping import")
+                    return True
+                if if_exists == ACTION_DELETE:
+                    self.delete(dataset_uri)
+                    self.create(dataset_uri)
+                    print("Deleted contents of {}".format(dataset_uri))
+
         except Unauthorized as err :
             print("Failed to connect to the data: access not allowed", file=sys.stderr)
             return False
