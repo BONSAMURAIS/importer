@@ -13,7 +13,7 @@ Options:
 """
 
 from docopt import docopt
-from bonsai_seeder.loader import load
+from bonsai_seeder.loader import Loader
 
 import argparse
 import sys
@@ -31,8 +31,11 @@ def main():
 
         args = parser.parse_args()
 
+        loader = Loader()
+
         for ifile in args.ifiles:
-            load(ifile)
+            if not loader.load(ifile):
+                print("Aborting", file=sys.stderr)
 
 
     except KeyboardInterrupt:
