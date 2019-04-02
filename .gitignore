@@ -279,3 +279,5 @@ mypyhtml/
 
 # Data
 /data
+
+config.ini
