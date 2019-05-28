@@ -59,6 +59,7 @@ class Loader(object):
         self.client.setHTTPAuth(BASIC)
         self.client.setCredentials(self.endpoint_user, self.endpoint_pwd)
 
+
     def exists(self, dataset_uri):
         self.client.setQuery(IS_DATASET_DEFINED.format(dataset_uri))
         self.client.setReturnFormat(JSON)
@@ -66,18 +67,33 @@ class Loader(object):
         answer = results.convert()
         return answer['boolean']
 
+
     def update(self, query):
         self.client.setQuery(query)
         self.client.setReturnFormat(XML)
         results = self.client.query()
-        return 'Success' in str(results.response.read())
+        message = str(results.response.read())
+        return 'Success' in message, message
 
 
     def create(self, dataset_uri):
         return self.update(CREATE_DATASET.format(dataset_uri, dataset_uri, RDF.type, DATASET_TYPE_URI ))
 
+
     def delete(self, dataset_uri):
         return self.update(DELETE_DATASET.format(dataset_uri))
+
+
+    def clean(self):
+        CLEAN_TRIPLES = """
+        DELETE {
+            ?s ?p ?o .
+        } WHERE {
+            ?s ?p ?o .
+            FILTER NOT EXISTS { GRAPH ?g { ?s ?p ?o } }
+        }
+        """
+        return self.update(CLEAN_TRIPLES)
 
 
 
@@ -87,12 +103,10 @@ class Loader(object):
         print("Trying to load {}".format(file_path))
 
         if not exists:
-            print("Error: {} file not found".format(file_path), file=sys.stderr)
-            return False
+            return False, "Error: {} file not found".format(file_path)
 
         if not file_path.endswith('.ttl'):
-            print("Error: only ttl files supported now", file=sys.stderr)
-            return False
+            return False, "Error: only ttl files supported now"
 
         # Load the TTL file
         g = Graph()
@@ -110,34 +124,36 @@ class Loader(object):
                 found = True
                 dataset_uri, _ , _ = triple
             else :
-                print("Multiple declarations of type {} . Only one expected".format(DATASET_TYPE_URI), file=sys.stderr)
-                return False
+                return False, "Multiple declarations of type {} . Only one expected".format(DATASET_TYPE_URI)
 
         if not found:
-            print("Missing declarations of type {} . One expected".format(DATASET_TYPE_URI), file=sys.stderr)
-            return False
+            return False, "Missing declarations of type {} . One expected".format(DATASET_TYPE_URI)
 
         try:
             if not self.exists(dataset_uri):
                 print("Creating graph {}".format(dataset_uri))
-                self.create(dataset_uri)
+                success, message = self.create(dataset_uri)
+                if not success:
+                    return False, message
             else :
                 print("Dataset {} exists".format(dataset_uri))
                 if if_exists == ACTION_SKIP:
-                    print("Skipping import")
-                    return True
+                    return True, "Skipping import"
                 if if_exists == ACTION_DELETE:
-                    self.delete(dataset_uri)
-                    self.create(dataset_uri)
+                    success, message = self.delete(dataset_uri)
+                    if not success:
+                        return False, message
+
+                    success, message = self.create(dataset_uri)
+                    if not success:
+                        return False, message
+
                     print("Deleted contents of {}".format(dataset_uri))
 
         except Unauthorized as err :
-            print("Failed to connect to the data: access not allowed", file=sys.stderr)
-            return False
+            return False, "Failed to connect to the data: access not allowed"
         except urllib.error.HTTPError as err:
-            print("Failed to connect to the data", file=sys.stderr)
-            print(err, file=sys.stderr)
-            return False
+            return False, "Failed to connect to the data: {}".format(err)
 
         print("Uploading contents of {}".format(file_path))
         files = { 'file': (os.path.basename(file_path), open(file_path,'rb'), 'text/turtle'), }
@@ -145,7 +161,5 @@ class Loader(object):
                                     files=files,
                                     auth=(self.endpoint_user, self.endpoint_pwd)
                                 )
-        print("Response:")
-        print(response.text)
 
-        return response.status_code in [200, 201]
+        return response.status_code in [200, 201], response.text

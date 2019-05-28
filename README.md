@@ -1,4 +1,13 @@
-# Project name
+# BONSAI Seeder
+
+`bseeder` is a CLI utility that parses `.ttl` files and updates their content to the Jena instance on https://db.bonsai.uno/ .
+
+```bash
+ bseeder -h
+ ```
+
+
+## TODO
 
 Basic project description
 
