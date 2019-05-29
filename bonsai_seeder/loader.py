@@ -5,6 +5,8 @@ import sys, os
 
 from SPARQLWrapper import SPARQLWrapper, POST, BASIC, URLENCODED, JSON, XML, TURTLE, N3
 from SPARQLWrapper.SPARQLExceptions import Unauthorized
+
+from rdflib.plugins.serializers.nt import _quoteLiteral
 from rdflib import URIRef, BNode, RDFS, RDF, Literal
 from rdflib.graph import Graph
 from time import sleep
@@ -174,15 +176,19 @@ class Loader(object):
             triples=[]
             count_inserted=0
             for sb,pr,obj in g:
-                triples.append("<{}> <{}> <{}>".format(sb, pr, obj))
+                if isinstance(obj, Literal):
+                    triples.append("<{}> <{}> <{}>".format(sb.n3(), pr.n3(), obj.n3()))
+                else:
+                    triples.append("<{}> <{}> <{}>".format(sb.n3(), pr.n3(), _quoteLiteral(obj)))
+
                 if len(triples) >= batch_size:
                     success, message = self.insert(dataset_uri, triples)
                     if not success:
                         return False, message
                     triples=[]
-                if count_inserted % 10 ==1
+                if count_inserted%10 == 1:
                     print("Inserted {} ".format(count_inserted*batch_size))
-                    sleep(1)
+                    sleep(3)
 
             if len(triples) > 0:
                 success, message = self.insert(dataset_uri, triples)
