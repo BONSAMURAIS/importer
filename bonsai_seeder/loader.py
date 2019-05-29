@@ -72,6 +72,7 @@ class Loader(object):
 
 
     def update(self, query):
+        print(query)
         self.client.setQuery(query)
         self.client.setReturnFormat(XML)
         results = self.client.query()
@@ -102,7 +103,7 @@ class Loader(object):
 
 
 
-    def load(self, file_name, if_exists=ACTION_SKIP, method=METHOD_UPLOAD):
+    def load(self, file_name, if_exists=ACTION_SKIP, method=METHOD_UPLOAD, batch_size=5):
         file_path = os.path.abspath(file_name)
         exists = os.path.isfile(file_path)
         print("Trying to load {}".format(file_path))
@@ -174,7 +175,7 @@ class Loader(object):
             triples=[]
             for sb,pr,obj in g:
                 triples.append("<{}> <{}> <{}>".format(sb, pr, obj))
-                if len(triples) >= 100:
+                if len(triples) >= batch_size:
                     success, message = self.insert(dataset_uri, triples)
                     if not success:
                         return False, message
