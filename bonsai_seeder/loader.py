@@ -190,9 +190,9 @@ class Loader(object):
                     count_inserted+=1
                     triples=[]
 
-                if count_inserted%10 == 1:
-                    print("Inserted {} ".format(count_inserted*batch_size))
-                    sleep(3)
+                    if count_inserted%10 == 1:
+                        print("Inserted {} ".format(count_inserted*batch_size))
+                        sleep(3)
 
             if len(triples) > 0:
                 success, message = self.insert(dataset_uri, triples)
