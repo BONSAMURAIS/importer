@@ -89,7 +89,7 @@ class Loader(object):
         return self.update(SPARQL_DELETE_DATASET.format(dataset_uri))
 
     def insert(self, dataset_uri, triples):
-        return self.update(SPARQL_INSERT.format(dataset_uri, ". \n".join(triples) ))
+        return self.update(SPARQL_INSERT.format(dataset_uri, " .\n".join(triples) ))
 
     def clean(self):
         CLEAN_TRIPLES = """
@@ -112,12 +112,13 @@ class Loader(object):
         if not exists:
             return False, "Error: {} file not found".format(file_path)
 
-        if not file_path.endswith('.ttl'):
-            return False, "Error: only ttl files supported now"
+        _ , file_extension = os.path.splitext(file_path)
+        if file_extension not in ['nt', 'ttl']:
+            return False, "Error: only ttl and nt files are supported now"
 
         # Load the TTL file
         g = Graph()
-        g.parse(file_path, format="ttl")
+        g.parse(file_path, format=file_extension)
         print("Parsed. Size {}".format(len(g)))
         # Check if it contains the mandatory dataset definition
         # TODO: This should be expanded to check also if author name,
@@ -177,15 +178,17 @@ class Loader(object):
             count_inserted=0
             for sb,pr,obj in g:
                 if isinstance(obj, Literal):
-                    triples.append("<{}> <{}> <{}>".format(sb.n3(), pr.n3(), obj.n3()))
+                    triples.append("{} {} {}".format(sb.n3(), pr.n3(), _quoteLiteral(obj)))
                 else:
-                    triples.append("<{}> <{}> <{}>".format(sb.n3(), pr.n3(), _quoteLiteral(obj)))
+                    triples.append("{} {} {}".format(sb.n3(), pr.n3(), obj.n3()))
 
                 if len(triples) >= batch_size:
                     success, message = self.insert(dataset_uri, triples)
                     if not success:
                         return False, message
+                    count_inserted+=len(triples)
                     triples=[]
+
                 if count_inserted%10 == 1:
                     print("Inserted {} ".format(count_inserted*batch_size))
                     sleep(3)
