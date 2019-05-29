@@ -110,11 +110,11 @@ class Loader(object):
         print("Trying to load {}".format(file_path))
 
         if not exists:
-            return False, "Error: {} file not found".format(file_path)
+            return False, "{} file not found".format(file_path)
 
         _ , file_extension = os.path.splitext(file_path)
         if file_extension not in ['nt', 'ttl']:
-            return False, "Error: only ttl and nt files are supported now"
+            return False, "only ttl and nt files are supported now"
 
         # Load the TTL file
         g = Graph()
@@ -186,7 +186,7 @@ class Loader(object):
                     success, message = self.insert(dataset_uri, triples)
                     if not success:
                         return False, message
-                    count_inserted+=len(triples)
+                    count_inserted+=1
                     triples=[]
 
                 if count_inserted%10 == 1:
