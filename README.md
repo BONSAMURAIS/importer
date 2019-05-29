@@ -3,8 +3,10 @@
 `bseeder` is a CLI utility that parses `.ttl` files and updates their content to the Jena instance on https://db.bonsai.uno/ .
 
 ```bash
- bseeder -h
- ```
+bseeder -h
+```
+
+**Setup:** To run it requires a `config.ini` file, see the example file `config.ini.sample`
 
 
 ## TODO
