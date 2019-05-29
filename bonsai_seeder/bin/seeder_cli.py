@@ -64,7 +64,7 @@ def main():
                 ifexists = ACTION_DELETE
 
             for ifile in args.ifiles:
-                response, msg = loader.load(ifile, ifexists):
+                response, msg = loader.load(ifile, ifexists)
                 if not response:
                     print("Error {} . Aborting".format(msg), file=sys.stderr)
                     sys.exit(2)
