@@ -113,8 +113,9 @@ class Loader(object):
             return False, "{} file not found".format(file_path)
 
         _ , file_extension = os.path.splitext(file_path)
+        file_extension = file_extension.strip('.')
         if file_extension not in ['nt', 'ttl']:
-            return False, "only ttl and nt files are supported now"
+            return False, "Invalid extension {} : only ttl and nt files are supported now".format(file_extension)
 
         # Load the TTL file
         g = Graph()
