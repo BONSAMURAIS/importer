@@ -7,7 +7,7 @@ from SPARQLWrapper import SPARQLWrapper, POST, BASIC, URLENCODED, JSON, XML, TUR
 from SPARQLWrapper.SPARQLExceptions import Unauthorized
 from rdflib import URIRef, BNode, RDFS, RDF, Literal
 from rdflib.graph import Graph
-
+from time import sleep
 
 REQUIRED_CONFIGS = ['database', 'credentials']
 DATASET_TYPE_URI = URIRef('http://purl.org/dc/dcmitype/Dataset')
@@ -72,7 +72,6 @@ class Loader(object):
 
 
     def update(self, query):
-        print(query)
         self.client.setQuery(query)
         self.client.setReturnFormat(XML)
         results = self.client.query()
@@ -103,7 +102,7 @@ class Loader(object):
 
 
 
-    def load(self, file_name, if_exists=ACTION_SKIP, method=METHOD_UPLOAD, batch_size=5):
+    def load(self, file_name, if_exists=ACTION_SKIP, method=METHOD_UPLOAD, batch_size=20):
         file_path = os.path.abspath(file_name)
         exists = os.path.isfile(file_path)
         print("Trying to load {}".format(file_path))
@@ -173,6 +172,7 @@ class Loader(object):
         else :
             print("Serializing iterative insertions")
             triples=[]
+            count_inserted=0
             for sb,pr,obj in g:
                 triples.append("<{}> <{}> <{}>".format(sb, pr, obj))
                 if len(triples) >= batch_size:
@@ -180,6 +180,10 @@ class Loader(object):
                     if not success:
                         return False, message
                     triples=[]
+                if count_inserted % 10 ==1
+                    print("Inserted {} ".format(count_inserted*batch_size))
+                    sleep(1)
+
             if len(triples) > 0:
                 success, message = self.insert(dataset_uri, triples)
 
