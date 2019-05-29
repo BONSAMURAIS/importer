@@ -12,8 +12,8 @@ from rdflib.graph import Graph
 REQUIRED_CONFIGS = ['database', 'credentials']
 DATASET_TYPE_URI = URIRef('http://purl.org/dc/dcmitype/Dataset')
 
-IS_DATASET_DEFINED = "ASK WHERE {{ GRAPH <{}> {{ ?s ?p ?o }} }}"
-CREATE_DATASET = """
+SPARQL_IS_DATASET_DEFINED = "ASK WHERE {{ GRAPH <{}> {{ ?s ?p ?o }} }}"
+SPARQL_CREATE_DATASET = """
 INSERT DATA {{
   GRAPH <{}> {{
     <{}> <{}> <{}>
@@ -21,11 +21,11 @@ INSERT DATA {{
 }}
 """
 
-DELETE_DATASET = """
+SPARQL_DELETE_DATASET = """
 DROP GRAPH <{}>
 """
 
-INSERT = """
+SPARQL_INSERT = """
 INSERT DATA {{
   GRAPH <{}> {{
     {}
@@ -36,6 +36,9 @@ INSERT DATA {{
 ACTION_SKIP=1
 ACTION_DELETE=2
 ACTION_CONTINUE=3
+
+METHOD_UPLOAD=1
+METHOD_INSERT=2
 
 class Loader(object):
 
@@ -61,7 +64,7 @@ class Loader(object):
 
 
     def exists(self, dataset_uri):
-        self.client.setQuery(IS_DATASET_DEFINED.format(dataset_uri))
+        self.client.setQuery(SPARQL_IS_DATASET_DEFINED.format(dataset_uri))
         self.client.setReturnFormat(JSON)
         results = self.client.query()
         answer = results.convert()
@@ -77,12 +80,14 @@ class Loader(object):
 
 
     def create(self, dataset_uri):
-        return self.update(CREATE_DATASET.format(dataset_uri, dataset_uri, RDF.type, DATASET_TYPE_URI ))
+        return self.update(SPARQL_CREATE_DATASET.format(dataset_uri, dataset_uri, RDF.type, DATASET_TYPE_URI ))
 
 
     def delete(self, dataset_uri):
-        return self.update(DELETE_DATASET.format(dataset_uri))
+        return self.update(SPARQL_DELETE_DATASET.format(dataset_uri))
 
+    def insert(self, dataset_uri, triples):
+        return self.update(SPARQL_INSERT.format(dataset_uri, ". \n".join(triples) ))
 
     def clean(self):
         CLEAN_TRIPLES = """
@@ -97,7 +102,7 @@ class Loader(object):
 
 
 
-    def load(self, file_name, if_exists=ACTION_SKIP):
+    def load(self, file_name, if_exists=ACTION_SKIP, method=METHOD_UPLOAD):
         file_path = os.path.abspath(file_name)
         exists = os.path.isfile(file_path)
         print("Trying to load {}".format(file_path))
@@ -155,11 +160,26 @@ class Loader(object):
         except urllib.error.HTTPError as err:
             return False, "Failed to connect to the data: {}".format(err)
 
-        print("Uploading contents of {}".format(file_path))
-        files = { 'file': (os.path.basename(file_path), open(file_path,'rb'), 'text/turtle'), }
-        response = requests.post("{}?graph={}".format(self.upload_endpoint, dataset_uri),
-                                    files=files,
-                                    auth=(self.endpoint_user, self.endpoint_pwd)
-                                )
+        success, message = True, "OK"
+        if method == METHOD_UPLOAD and len(g) < 1000:
+            print("Uploading contents of {}".format(file_path))
+            files = { 'file': (os.path.basename(file_path), open(file_path,'rb'), 'text/turtle'), }
+            response = requests.post("{}?graph={}".format(self.upload_endpoint, dataset_uri),
+                                        files=files,
+                                        auth=(self.endpoint_user, self.endpoint_pwd)
+                                    )
+            success, message = response.status_code in [200, 201], response.text
+        else :
+            print("Serializing iterative insertions")
+            triples=[]
+            for sb,pr,obj in g:
+                triples.append("<{}> <{}> <{}>".format(sb, pr, obj))
+                if len(triples) >= 100:
+                    success, message = self.insert(dataset_uri, triples)
+                    if not success:
+                        return False, message
+                    triples=[]
+            if len(triples) > 0:
+                success, message = self.insert(dataset_uri, triples)
 
-        return response.status_code in [200, 201], response.text
+        return success, message
