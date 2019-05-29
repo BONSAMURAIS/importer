@@ -13,7 +13,7 @@ Options:
 """
 
 from docopt import docopt
-from bonsai_seeder.loader import Loader
+from bonsai_seeder.loader import Loader, ACTION_CONTINUE, ACTION_DELETE, ACTION_SKIP
 
 import argparse
 import sys
@@ -28,6 +28,13 @@ def main():
         parser.add_argument('-i','--import', nargs='+',
                             dest='ifiles',
                             help='list of files to read')
+
+        parser.add_argument('--ifexists',
+                            choices=('skip', 'delete', 'continue'),
+                            default='skip',
+                            dest='mode',
+                            help='What to do in case data is already present')
+
 
         parser.add_argument('--clean', dest='clean', action='store_true',
                             help='Clean: delete triples that are not in a named graph')
@@ -50,8 +57,14 @@ def main():
                 sys.exit(2)
 
         if args.ifiles is not None:
+            ifexists = ACTION_SKIP
+            if args.mode == 'continue' :
+                ifexists = ACTION_CONTINUE
+            if args.mode == 'delete' :
+                ifexists = ACTION_DELETE
+
             for ifile in args.ifiles:
-                if not loader.load(ifile):
+                if not loader.load(ifile, ifexists):
                     print("Error. Aborting", file=sys.stderr)
                     sys.exit(2)
 

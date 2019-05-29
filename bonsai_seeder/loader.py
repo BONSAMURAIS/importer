@@ -111,7 +111,7 @@ class Loader(object):
         # Load the TTL file
         g = Graph()
         g.parse(file_path, format="ttl")
-
+        print("Parsed. Size {}".format(len(g)))
         # Check if it contains the mandatory dataset definition
         # TODO: This should be expanded to check also if author name,
         #      title, description, and licence are defined
