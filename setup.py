@@ -49,6 +49,9 @@ setup(
     install_requires=[
         'appdirs',
         'docopt',
+        'rdflib',
+        'requests',
+        'SPARQLWrapper'
     ],
     url="your_url_here",
     long_description=open('README.md').read(),
