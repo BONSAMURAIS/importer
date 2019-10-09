@@ -70,7 +70,7 @@ def main():
             while len(args.ifiles) > 0:
                 path = args.ifiles.pop(0)
                 if os.path.isfile(path):
-                    targets.add(path)
+                    targets.append(path)
                 elif os.path.isdir(path):
                     args.ifiles += glob.glob(path + '/*')
                 else :
