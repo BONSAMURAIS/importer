@@ -8,6 +8,17 @@ bseeder -h
 
 **Setup:** To run it requires a `config.ini` file, see the example file `config.ini.sample`
 
+```
+python setup.py install
+```
+
+## With docker
+
+```
+docker build  . -t bonsai/bseeder -f bseeder.dockerfile
+
+docker run -it --rm bonsai/bseeder -h
+```
 
 ## TODO
 
