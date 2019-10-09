@@ -16,7 +16,9 @@ from docopt import docopt
 from bonsai_seeder.loader import Loader, ACTION_CONTINUE, ACTION_DELETE, ACTION_SKIP
 
 import argparse
+import glob
 import sys
+import os
 
 
 
@@ -64,7 +66,16 @@ def main():
             if args.mode == 'delete' :
                 ifexists = ACTION_DELETE
 
-            for ifile in args.ifiles:
+            targets = []
+            for path in args.ifiles:
+                if os.path.isfile(path):
+                    targets.add(path)
+                elif os.path.isdir(path):
+                    targets += glob.glob(path + '/*')
+                else :
+                    targets += glob.glob(path)
+
+            for ifile in targets:
                 response, msg = loader.load(ifile, ifexists)
                 if not response:
                     print("Error {} . Aborting".format(msg), file=sys.stderr)
