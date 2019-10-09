@@ -45,6 +45,8 @@ METHOD_INSERT=2
 class Loader(object):
 
     def __init__(self):
+        if not os.path.isfile('./config.ini'):
+            raise Exception("Missing '{}' file".format('./config.ini'))
         config = configparser.ConfigParser()
         config.read('config.ini')
         for sc in REQUIRED_CONFIGS:

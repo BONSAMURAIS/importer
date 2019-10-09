@@ -25,7 +25,7 @@ def main():
         # @Chris what is this used for?
         # args = docopt(__doc__, version='Version number for *this* CLI')
 
-        parser = argparse.ArgumentParser(description='Sync RDF to http://db.bonsai.uno')
+        parser = argparse.ArgumentParser(description="Sync RDF to some remote jena/fuseki server\nRequires config.ini file")
         parser.add_argument('-i','--import', nargs='+',
                             dest='ifiles',
                             help='list of files to read')
