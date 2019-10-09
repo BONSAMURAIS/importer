@@ -67,13 +67,14 @@ def main():
                 ifexists = ACTION_DELETE
 
             targets = []
-            for path in args.ifiles:
+            while len(args.ifiles) > 0:
+                path = args.ifiles.pop(0)
                 if os.path.isfile(path):
                     targets.add(path)
                 elif os.path.isdir(path):
-                    targets += glob.glob(path + '/*')
+                    args.ifiles += glob.glob(path + '/*')
                 else :
-                    targets += glob.glob(path)
+                    args.ifiles += glob.glob(path)
 
             for ifile in targets:
                 response, msg = loader.load(ifile, ifexists)
