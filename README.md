@@ -18,6 +18,9 @@ python setup.py install
 docker build  . -t bonsai/bseeder -f bseeder.dockerfile
 
 docker run -it --rm bonsai/bseeder -h
+
+
+docker run -it --rm -v "$PWD/config.ini":/config.ini -v "$PWD/data":/data bonsai/bseeder -i /data/*.ttl
 ```
 
 ## TODO
