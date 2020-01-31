@@ -106,7 +106,7 @@ class Loader(object):
 
 
 
-    def load(self, file_name, if_exists=ACTION_SKIP, method=METHOD_UPLOAD, batch_size=20):
+    def load(self, file_name, if_exists=ACTION_SKIP, method=METHOD_UPLOAD, batch_size=500):
         file_path = os.path.abspath(file_name)
         exists = os.path.isfile(file_path)
         print("Trying to load {}".format(file_path))
@@ -194,7 +194,7 @@ class Loader(object):
 
                     if count_inserted%10 == 1:
                         print("Inserted {} ".format(count_inserted*batch_size))
-                        sleep(3)
+                        sleep(0.01)
 
             if len(triples) > 0:
                 success, message = self.insert(dataset_uri, triples)
