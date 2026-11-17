@@ -7,11 +7,11 @@ name = "pypi"
 appdirs = "*"
 docopt = "*"
 rdflib = "*"
-requests = "*"
+requests = "==2.33.0"
 sparqlwrapper = "*"
 
 [dev-packages]
 pylint = "*"
 
 [requires]
-python_version = "3.7"
+python_version = "3.12"

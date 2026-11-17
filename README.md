@@ -8,8 +8,10 @@ bseeder -h
 
 **Setup:** To run it requires a `config.ini` file, see the example file `config.ini.sample`
 
+Python 3.10 or later is required.
+
 ```
-python setup.py install
+pip install .
 ```
 
 ## With docker
