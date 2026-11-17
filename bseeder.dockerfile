@@ -1,23 +1,21 @@
-FROM python:3.7-buster
+FROM python:3.12-slim
 
 
-RUN pip3 install appdirs==1.4.3 \
+RUN pip3 install appdirs==1.4.4 \
 docopt==0.6.2 \
-rdflib==4.2.2 \
-requests==2.22.0 \
-SPARQLWrapper==1.8.4
+rdflib==7.6.0 \
+requests==2.33.0 \
+SPARQLWrapper==2.0.0
 
 COPY ./bonsai_seeder /bonsai_seeder
 COPY ./setup.py /setup.py
 COPY ./LICENSE /LICENSE
 COPY ./README.md /README.md
 
-RUN python setup.py install
+RUN pip3 install .
 
 RUN mkdir /data
 VOLUME /data
 
 ENTRYPOINT ["bseeder"]
 CMD ["-h"]
-
-
